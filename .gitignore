@@ -1,0 +1,34 @@
+# =========================
+# Environment variables
+# =========================
+.env
+
+# =========================
+# Django
+# =========================
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+
+media/
+staticfiles/
+
+# =========================
+# Ignore sensitive app logic
+# =========================
+ecommerce/models.py
+ecommerce/migrations/
+ecommerce/admin.py
+ecommerce/management/commands/
+
+# Optional: ignore services / business logic
+ecommerce/services/
+ecommerce/utils/
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
