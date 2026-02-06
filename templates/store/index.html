@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load math_filters %}
 {% load static %}
 
 {% block title %}Mukurugenzi - E-commerce & Video Streaming Platform{% endblock %}
@@ -104,7 +105,7 @@
         </a>
       </div>
       <div class="col text-center">
-        <a href="{% url 'videos' %}" class="categories-item">
+        <a href="#" class="categories-item">
           <iconify-icon class="category-icon" icon="ph:video-camera"></iconify-icon>
           <h5>Videos</h5>
         </a>
@@ -453,7 +454,7 @@
     <div class="row my-5 py-5">
       <div class="offset-md-3 col-md-6 my-5">
         <h2 class="display-3 fw-normal text-center">Get <span class="text-primary">20% Off</span> on first Purchase</h2>
-        <form action="{% url 'newsletter_subscribe' %}" method="post">
+        <form action="#" method="post">
           {% csrf_token %}
           <div class="mb-3">
             <input type="email" class="form-control form-control-lg" name="email" id="email"
@@ -592,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const productId = this.dataset.productId;
       
-      fetch('{% url "add_to_wishlist" %}', {
+      fetch('#', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
