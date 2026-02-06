@@ -20,7 +20,6 @@ staticfiles/
 # =========================
 ecommerce/models.py
 ecommerce/migrations/
-ecommerce/admin.py
 ecommerce/management/commands/
 
 # Optional: ignore services / business logic
