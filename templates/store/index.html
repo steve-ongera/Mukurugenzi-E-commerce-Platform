@@ -1,11 +1,619 @@
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <title>index.html</title>
-</head>
-<body>
-    <h1>Still under development </h1>
-    <p>Mukurugenzi E-commerce Platform</p>
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mukurugenzi - E-commerce & Video Streaming Platform{% endblock %}
+
+{% block home_active %}active{% endblock %}
+
+{% block content %}
+
+<!-- Banner Section with Swiper Slider -->
+<section id="banner" style="background: #F9F3EC;">
+  <div class="container">
+    <div class="swiper main-swiper">
+      <div class="swiper-wrapper">
+        
+        {% for banner in banners %}
+        <div class="swiper-slide py-5">
+          <div class="row banner-content align-items-center">
+            <div class="img-wrapper col-md-5">
+              <img src="{{ banner.image.url }}" class="img-fluid" alt="{{ banner.title }}">
+            </div>
+            <div class="content-wrapper col-md-7 p-5 mb-5">
+              {% if banner.subtitle %}
+              <div class="secondary-font text-primary text-uppercase mb-4">{{ banner.subtitle }}</div>
+              {% endif %}
+              <h2 class="banner-title display-1 fw-normal">{{ banner.title }}</h2>
+              {% if banner.link and banner.button_text %}
+              <a href="{{ banner.link }}" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
+                {{ banner.button_text }}
+                <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
+                  <use xlink:href="#arrow-right"></use>
+                </svg>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <!-- Default banner if no banners exist -->
+        <div class="swiper-slide py-5">
+          <div class="row banner-content align-items-center">
+            <div class="img-wrapper col-md-5">
+              <img src="{% static 'images/banner-img.png' %}" class="img-fluid">
+            </div>
+            <div class="content-wrapper col-md-7 p-5 mb-5">
+              <div class="secondary-font text-primary text-uppercase mb-4">Save 10 - 20 % off</div>
+              <h2 class="banner-title display-1 fw-normal">Best destination for <span class="text-primary">your shopping</span></h2>
+              <a href="{% url 'products' %}" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
+                shop now
+                <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
+                  <use xlink:href="#arrow-right"></use>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+      </div>
+      <div class="swiper-pagination mb-5"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section id="categories">
+  <div class="container my-3 py-5">
+    <div class="row my-5">
+      {% for category in categories %}
+      <div class="col text-center">
+        <a href="{% url 'products' %}?category={{ category.slug }}" class="categories-item">
+          {% if category.image %}
+          <img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;">
+          {% else %}
+          <iconify-icon class="category-icon" icon="ph:shopping-bag"></iconify-icon>
+          {% endif %}
+          <h5>{{ category.name }}</h5>
+        </a>
+      </div>
+      {% empty %}
+      <!-- Default categories -->
+      <div class="col text-center">
+        <a href="{% url 'products' %}" class="categories-item">
+          <iconify-icon class="category-icon" icon="ph:t-shirt"></iconify-icon>
+          <h5>Clothing</h5>
+        </a>
+      </div>
+      <div class="col text-center">
+        <a href="{% url 'products' %}" class="categories-item">
+          <iconify-icon class="category-icon" icon="ph:sneaker"></iconify-icon>
+          <h5>Footwear</h5>
+        </a>
+      </div>
+      <div class="col text-center">
+        <a href="{% url 'products' %}" class="categories-item">
+          <iconify-icon class="category-icon" icon="ph:watch"></iconify-icon>
+          <h5>Accessories</h5>
+        </a>
+      </div>
+      <div class="col text-center">
+        <a href="{% url 'products' %}" class="categories-item">
+          <iconify-icon class="category-icon" icon="ph:laptop"></iconify-icon>
+          <h5>Electronics</h5>
+        </a>
+      </div>
+      <div class="col text-center">
+        <a href="{% url 'videos' %}" class="categories-item">
+          <iconify-icon class="category-icon" icon="ph:video-camera"></iconify-icon>
+          <h5>Videos</h5>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Featured Products Section -->
+<section id="clothing" class="my-5 overflow-hidden">
+  <div class="container pb-5">
+
+    <div class="section-header d-md-flex justify-content-between align-items-center mb-3">
+      <h2 class="display-3 fw-normal">Featured Products</h2>
+      <div>
+        <a href="{% url 'products' %}" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
+          shop now
+          <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
+            <use xlink:href="#arrow-right"></use>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="products-carousel swiper">
+      <div class="swiper-wrapper">
+
+        {% for product in featured_products %}
+        <div class="swiper-slide">
+          {% if product.compare_at_price %}
+          <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle">
+            Sale
+          </div>
+          {% elif product.created_at|date:"Y-m-d" >= today_minus_7|date:"Y-m-d" %}
+          <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle">
+            New
+          </div>
+          {% endif %}
+          
+          <div class="card position-relative">
+            <a href="{% url 'product_detail' slug=product.slug %}">
+              {% if product.images.all %}
+                {% with product.images.all|first as first_image %}
+                <img src="{{ first_image.image.url }}" class="img-fluid rounded-4" alt="{{ product.name }}">
+                {% endwith %}
+              {% else %}
+                <img src="{% static 'images/default-product.png' %}" class="img-fluid rounded-4" alt="{{ product.name }}">
+              {% endif %}
+            </a>
+            
+            <div class="card-body p-0">
+              <a href="{% url 'product_detail' slug=product.slug %}">
+                <h3 class="card-title pt-4 m-0">{{ product.name }}</h3>
+              </a>
+
+              <div class="card-text">
+                <span class="rating secondary-font">
+                  {% with product.reviews.all|length as review_count %}
+                    {% if review_count > 0 %}
+                      {% with product.reviews.aggregate.rating__avg as avg_rating %}
+                      {% for i in "12345" %}
+                        {% if forloop.counter <= avg_rating %}
+                        <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                        {% else %}
+                        <iconify-icon icon="clarity:star-outline" class="text-muted"></iconify-icon>
+                        {% endif %}
+                      {% endfor %}
+                      {{ avg_rating|floatformat:1 }}
+                      {% endwith %}
+                    {% else %}
+                      <iconify-icon icon="clarity:star-outline" class="text-muted"></iconify-icon>
+                      <iconify-icon icon="clarity:star-outline" class="text-muted"></iconify-icon>
+                      <iconify-icon icon="clarity:star-outline" class="text-muted"></iconify-icon>
+                      <iconify-icon icon="clarity:star-outline" class="text-muted"></iconify-icon>
+                      <iconify-icon icon="clarity:star-outline" class="text-muted"></iconify-icon>
+                      0.0
+                    {% endif %}
+                  {% endwith %}
+                </span>
+
+                <h3 class="secondary-font text-primary">
+                  {% if product.compare_at_price %}
+                    <span class="text-decoration-line-through text-muted me-2">KES {{ product.compare_at_price }}</span>
+                  {% endif %}
+                  KES {{ product.base_price }}
+                </h3>
+
+                <div class="d-flex flex-wrap mt-3">
+                  <a href="{% url 'product_detail' slug=product.slug %}" class="btn-cart me-3 px-4 pt-3 pb-3">
+                    <h5 class="text-uppercase m-0">View Details</h5>
+                  </a>
+                  <a href="#" class="btn-wishlist px-4 pt-3" data-product-id="{{ product.id }}">
+                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
+                  </a>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <!-- No products message -->
+        <div class="col-12 text-center py-5">
+          <p class="lead">No featured products available at the moment.</p>
+          <a href="{% url 'products' %}" class="btn btn-primary">Browse All Products</a>
+        </div>
+        {% endfor %}
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- New Arrivals Section -->
+<section id="foodies" class="my-5">
+  <div class="container my-5 py-5">
+
+    <div class="section-header d-md-flex justify-content-between align-items-center">
+      <h2 class="display-3 fw-normal">New Arrivals</h2>
+      <div class="mb-4 mb-md-0">
+        <p class="m-0">
+          <button class="filter-button me-4 active" data-filter="*">ALL</button>
+          <button class="filter-button me-4" data-filter=".clothing">CLOTHING</button>
+          <button class="filter-button me-4" data-filter=".footwear">FOOTWEAR</button>
+          <button class="filter-button me-4" data-filter=".accessories">ACCESSORIES</button>
+        </p>
+      </div>
+      <div>
+        <a href="{% url 'products' %}?sort=newest" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
+          shop now
+          <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
+            <use xlink:href="#arrow-right"></use>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="isotope-container row">
+
+      {% for product in new_products %}
+      <div class="item {{ product.product_type }} col-md-4 col-lg-3 my-4">
+        {% if product.compare_at_price %}
+        <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle">
+          -{{ product.compare_at_price|sub:product.base_price|div:product.compare_at_price|mul:100|floatformat:0 }}%
+        </div>
+        {% else %}
+        <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle">
+          New
+        </div>
+        {% endif %}
+        
+        <div class="card position-relative">
+          <a href="{% url 'product_detail' slug=product.slug %}">
+            {% if product.images.all %}
+              {% with product.images.all|first as first_image %}
+              <img src="{{ first_image.image.url }}" class="img-fluid rounded-4" alt="{{ product.name }}">
+              {% endwith %}
+            {% else %}
+              <img src="{% static 'images/default-product.png' %}" class="img-fluid rounded-4" alt="{{ product.name }}">
+            {% endif %}
+          </a>
+          
+          <div class="card-body p-0">
+            <a href="{% url 'product_detail' slug=product.slug %}">
+              <h3 class="card-title pt-4 m-0">{{ product.name|truncatewords:5 }}</h3>
+            </a>
+
+            <div class="card-text">
+              <span class="rating secondary-font">
+                {% with product.reviews.all|length as review_count %}
+                  {% if review_count > 0 %}
+                    {% for i in "12345" %}
+                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                    {% endfor %}
+                    5.0
+                  {% else %}
+                    {% for i in "12345" %}
+                    <iconify-icon icon="clarity:star-outline" class="text-muted"></iconify-icon>
+                    {% endfor %}
+                    0.0
+                  {% endif %}
+                {% endwith %}
+              </span>
+
+              <h3 class="secondary-font text-primary">KES {{ product.base_price }}</h3>
+
+              <div class="d-flex flex-wrap mt-3">
+                <a href="{% url 'product_detail' slug=product.slug %}" class="btn-cart me-3 px-4 pt-3 pb-3">
+                  <h5 class="text-uppercase m-0">View Details</h5>
+                </a>
+                <a href="#" class="btn-wishlist px-4 pt-3" data-product-id="{{ product.id }}">
+                  <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
+                </a>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+
+  </div>
+</section>
+
+<!-- Promotional Banner -->
+<section id="banner-2" class="my-3" style="background: #F9F3EC;">
+  <div class="container">
+    <div class="row flex-row-reverse banner-content align-items-center">
+      <div class="img-wrapper col-12 col-md-6">
+        <img src="{% static 'images/banner-img2.png' %}" class="img-fluid">
+      </div>
+      <div class="content-wrapper col-12 offset-md-1 col-md-5 p-5">
+        <div class="secondary-font text-primary text-uppercase mb-3 fs-4">Upto 40% off</div>
+        <h2 class="banner-title display-1 fw-normal">Special Offers!</h2>
+        <a href="{% url 'products' %}" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
+          shop now
+          <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
+            <use xlink:href="#arrow-right"></use>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Videos Section -->
+{% if featured_videos %}
+<section id="featured-videos" class="my-5 overflow-hidden">
+  <div class="container pb-5">
+
+    <div class="section-header d-md-flex justify-content-between align-items-center mb-3">
+      <h2 class="display-3 fw-normal">Featured Videos</h2>
+      <div>
+        <a href="{% url 'videos' %}" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
+          Browse All
+          <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
+            <use xlink:href="#arrow-right"></use>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="row">
+      {% for video in featured_videos %}
+      <div class="col-md-4 my-3">
+        <div class="card position-relative">
+          <a href="{% url 'video_detail' slug=video.slug %}">
+            <img src="{{ video.thumbnail.url }}" class="img-fluid rounded-4" alt="{{ video.title }}">
+            <div class="position-absolute top-50 start-50 translate-middle">
+              <iconify-icon icon="ph:play-circle-fill" class="text-white" style="font-size: 4rem;"></iconify-icon>
+            </div>
+          </a>
+          <div class="card-body">
+            <span class="badge bg-primary">{{ video.get_content_type_display }}</span>
+            <a href="{% url 'video_detail' slug=video.slug %}">
+              <h4 class="card-title mt-2">{{ video.title }}</h4>
+            </a>
+            <p class="card-text text-muted">{{ video.short_description|truncatewords:15 }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-primary fw-bold">
+                {% if video.is_free %}
+                  FREE
+                {% else %}
+                  KES {{ video.rental_price }}
+                {% endif %}
+              </span>
+              <span class="rating secondary-font">
+                <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                {{ video.average_rating|floatformat:1 }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+{% endif %}
+
+<!-- Testimonials Section -->
+<section id="testimonial">
+  <div class="container my-5 py-5">
+    <div class="row">
+      <div class="offset-md-1 col-md-10">
+        <div class="swiper testimonial-swiper">
+          <div class="swiper-wrapper">
+
+            <div class="swiper-slide">
+              <div class="row">
+                <div class="col-2">
+                  <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                </div>
+                <div class="col-md-10 mt-md-5 p-5 pt-0 pt-md-5">
+                  <p class="testimonial-content fs-2">Mukurugenzi offers an amazing shopping experience with quality products and excellent customer service!</p>
+                  <p class="text-black">- Sarah Mwangi</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="swiper-slide">
+              <div class="row">
+                <div class="col-2">
+                  <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                </div>
+                <div class="col-md-10 mt-md-5 p-5 pt-0 pt-md-5">
+                  <p class="testimonial-content fs-2">Fast delivery and secure payments. I love shopping here and watching their exclusive video content!</p>
+                  <p class="text-black">- James Ochieng</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="swiper-slide">
+              <div class="row">
+                <div class="col-2">
+                  <iconify-icon icon="ri:double-quotes-l" class="quote-icon text-primary"></iconify-icon>
+                </div>
+                <div class="col-md-10 mt-md-5 p-5 pt-0 pt-md-5">
+                  <p class="testimonial-content fs-2">The best e-commerce platform in Kenya. Great products, competitive prices, and reliable service.</p>
+                  <p class="text-black">- Mary Wanjiru</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="swiper-pagination"></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- Newsletter/Registration Section -->
+<section id="register" style="background: url('{% static 'images/background-img.png' %}') no-repeat;">
+  <div class="container">
+    <div class="row my-5 py-5">
+      <div class="offset-md-3 col-md-6 my-5">
+        <h2 class="display-3 fw-normal text-center">Get <span class="text-primary">20% Off</span> on first Purchase</h2>
+        <form action="{% url 'newsletter_subscribe' %}" method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <input type="email" class="form-control form-control-lg" name="email" id="email"
+              placeholder="Enter Your Email Address" required>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-dark btn-lg rounded-1">Subscribe Now</button>
+          </div>
+        </form>
+        <div class="text-center mt-3">
+          <p class="text-muted">Already have an account? <a href="{% url 'login' %}" class="text-primary">Login here</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Service Features Section -->
+<section id="service">
+  <div class="container py-5 my-5">
+    <div class="row g-md-5 pt-4">
+      <div class="col-md-3 my-3">
+        <div class="card">
+          <div>
+            <iconify-icon class="service-icon text-primary" icon="la:shipping-fast"></iconify-icon>
+          </div>
+          <h3 class="card-title py-2 m-0">Fast Delivery</h3>
+          <div class="card-text">
+            <p class="blog-paragraph fs-6">County delivery stations across Kenya for quick and reliable delivery.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 my-3">
+        <div class="card">
+          <div>
+            <iconify-icon class="service-icon text-primary" icon="la:user-check"></iconify-icon>
+          </div>
+          <h3 class="card-title py-2 m-0">100% Secure Payment</h3>
+          <div class="card-text">
+            <p class="blog-paragraph fs-6">M-Pesa and PayPal integration for safe and convenient payments.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 my-3">
+        <div class="card">
+          <div>
+            <iconify-icon class="service-icon text-primary" icon="la:video"></iconify-icon>
+          </div>
+          <h3 class="card-title py-2 m-0">Video Streaming</h3>
+          <div class="card-text">
+            <p class="blog-paragraph fs-6">Access exclusive video content with rental and subscription options.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 my-3">
+        <div class="card">
+          <div>
+            <iconify-icon class="service-icon text-primary" icon="la:award"></iconify-icon>
+          </div>
+          <h3 class="card-title py-2 m-0">Quality Guarantee</h3>
+          <div class="card-text">
+            <p class="blog-paragraph fs-6">Authentic products with verified reviews and return policy.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Instagram Section (Social Proof) -->
+<section id="insta" class="my-5">
+  <div class="row g-0 py-5">
+    <div class="col instagram-item text-center position-relative">
+      <div class="icon-overlay d-flex justify-content-center position-absolute">
+        <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
+      </div>
+      <a href="#">
+        <img src="{% static 'images/insta1.jpg' %}" alt="insta-img" class="img-fluid rounded-3">
+      </a>
+    </div>
+    <div class="col instagram-item text-center position-relative">
+      <div class="icon-overlay d-flex justify-content-center position-absolute">
+        <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
+      </div>
+      <a href="#">
+        <img src="{% static 'images/insta2.jpg' %}" alt="insta-img" class="img-fluid rounded-3">
+      </a>
+    </div>
+    <div class="col instagram-item text-center position-relative">
+      <div class="icon-overlay d-flex justify-content-center position-absolute">
+        <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
+      </div>
+      <a href="#">
+        <img src="{% static 'images/insta3.jpg' %}" alt="insta-img" class="img-fluid rounded-3">
+      </a>
+    </div>
+    <div class="col instagram-item text-center position-relative">
+      <div class="icon-overlay d-flex justify-content-center position-absolute">
+        <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
+      </div>
+      <a href="#">
+        <img src="{% static 'images/insta4.jpg' %}" alt="insta-img" class="img-fluid rounded-3">
+      </a>
+    </div>
+    <div class="col instagram-item text-center position-relative">
+      <div class="icon-overlay d-flex justify-content-center position-absolute">
+        <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
+      </div>
+      <a href="#">
+        <img src="{% static 'images/insta5.jpg' %}" alt="insta-img" class="img-fluid rounded-3">
+      </a>
+    </div>
+    <div class="col instagram-item text-center position-relative">
+      <div class="icon-overlay d-flex justify-content-center position-absolute">
+        <iconify-icon class="text-white" icon="la:instagram"></iconify-icon>
+      </div>
+      <a href="#">
+        <img src="{% static 'images/insta6.jpg' %}" alt="insta-img" class="img-fluid rounded-3">
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Wishlist functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const wishlistButtons = document.querySelectorAll('.btn-wishlist');
+  
+  wishlistButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const productId = this.dataset.productId;
+      
+      fetch('{% url "add_to_wishlist" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({product_id: productId})
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          this.classList.toggle('active');
+          alert('Product added to wishlist!');
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

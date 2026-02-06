@@ -43,12 +43,22 @@ def index(request):
     featured_products = Product.objects.filter(
         is_active=True,
         is_featured=True
-    ).select_related('category', 'brand').prefetch_related('images')[:8]
+    ).select_related('category', 'brand').prefetch_related(
+        'images',
+        Prefetch('reviews', queryset=ProductReview.objects.filter(is_approved=True))
+    )[:8]
     
-    # New arrivals
+    # New arrivals (last 30 days)
     new_products = Product.objects.filter(
-        is_active=True
-    ).select_related('category', 'brand').prefetch_related('images').order_by('-created_at')[:8]
+        is_active=True,
+        created_at__gte=timezone.now() - timedelta(days=30)
+    ).select_related('category', 'brand').prefetch_related('images').order_by('-created_at')[:12]
+    
+    # If not enough new products, get latest products
+    if new_products.count() < 12:
+        new_products = Product.objects.filter(
+            is_active=True
+        ).select_related('category', 'brand').prefetch_related('images').order_by('-created_at')[:12]
     
     # Featured videos
     featured_videos = Video.objects.filter(
@@ -56,11 +66,18 @@ def index(request):
         is_featured=True
     ).prefetch_related('genres')[:6]
     
-    # Get categories
+    # Get categories (parent categories only)
     categories = Category.objects.filter(
         is_active=True,
         parent__isnull=True
-    ).prefetch_related('subcategories')[:8]
+    ).prefetch_related('subcategories')[:5]
+    
+    # Calculate date 7 days ago for "New" badge
+    today_minus_7 = timezone.now() - timedelta(days=7)
+    
+    # Get cart count for current user
+    cart = get_or_create_cart(request)
+    cart_count = cart.total_items if cart else 0
     
     context = {
         'banners': banners,
@@ -68,6 +85,8 @@ def index(request):
         'new_products': new_products,
         'featured_videos': featured_videos,
         'categories': categories,
+        'today_minus_7': today_minus_7,
+        'cart_count': cart_count,
     }
     
     return render(request, 'store/index.html', context)
@@ -143,6 +162,10 @@ def products(request):
     all_categories = Category.objects.filter(is_active=True, parent__isnull=True)
     all_brands = Brand.objects.filter(is_active=True)
     
+    # Get cart count
+    cart = get_or_create_cart(request)
+    cart_count = cart.total_items if cart else 0
+    
     context = {
         'products': products_page,
         'categories': all_categories,
@@ -154,9 +177,11 @@ def products(request):
         'min_price': min_price,
         'max_price': max_price,
         'product_type': product_type,
+        'cart_count': cart_count,
     }
     
     return render(request, 'store/products.html', context)
+
 
 
 def product_detail(request, slug):
@@ -192,6 +217,10 @@ def product_detail(request, slug):
         is_active=True
     ).exclude(id=product.id).prefetch_related('images')[:4]
     
+    # Get cart count
+    cart = get_or_create_cart(request)
+    cart_count = cart.total_items if cart else 0
+    
     context = {
         'product': product,
         'available_sizes': available_sizes,
@@ -199,6 +228,7 @@ def product_detail(request, slug):
         'reviews': reviews,
         'average_rating': average_rating,
         'related_products': related_products,
+        'cart_count': cart_count,
     }
     
     return render(request, 'store/product_detail.html', context)
@@ -249,6 +279,7 @@ def get_variant_details(request):
 # ============================================================================
 # CART VIEWS
 # ============================================================================
+
 
 def get_or_create_cart(request):
     """Helper function to get or create cart for user or session"""
@@ -321,6 +352,7 @@ def add_to_cart(request):
             'success': False,
             'message': str(e)
         }, status=400)
+
 
 
 @require_POST
